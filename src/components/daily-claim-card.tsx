@@ -1,24 +1,31 @@
 "use client"
 
+import React from "react"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { CheckCircle, Clock } from "lucide-react"
+import { CheckCircle, Clock } from 'lucide-react'
+import "@/types/telegram"
 
-export function DailyClaimCard({ lastClaim, onClaim }) {
+interface DailyClaimCardProps {
+  lastClaim: string | null;
+  onClaim: () => void;
+}
+
+export function DailyClaimCard({ lastClaim, onClaim }: DailyClaimCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [claimed, setClaimed] = useState(false)
   const [error, setError] = useState("")
-
+  
   const canClaim = !lastClaim || new Date(lastClaim).getDate() !== new Date().getDate()
-
+  
   const handleClaim = async () => {
     if (!canClaim) return
-
+    
     setIsLoading(true)
     setError("")
-
+    
     try {
       const response = await fetch("/api/claim", {
         method: "POST",
@@ -27,20 +34,22 @@ export function DailyClaimCard({ lastClaim, onClaim }) {
         },
         body: JSON.stringify({
           telegramId: window.Telegram?.WebApp?.initDataUnsafe?.user?.id,
-          claimType: "daily",
+          claimType: "daily"
         }),
       })
-
+      
       if (!response.ok) {
         throw new Error("Failed to claim reward")
       }
-
+      
       const data = await response.json()
       if (data.success) {
         setClaimed(true)
         setTimeout(() => {
           setClaimed(false)
-          onClaim && onClaim()
+          if (onClaim) {
+            onClaim()
+          }
         }, 2000)
       } else {
         setError(data.message || "Failed to claim reward")
@@ -52,7 +61,7 @@ export function DailyClaimCard({ lastClaim, onClaim }) {
       setIsLoading(false)
     }
   }
-
+  
   return (
     <Card className="border-gray-800 bg-gray-900/50 backdrop-blur-sm">
       <CardHeader>
@@ -62,7 +71,11 @@ export function DailyClaimCard({ lastClaim, onClaim }) {
       <CardContent>
         <div className="flex items-center justify-center py-4">
           {canClaim ? (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="text-center">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-center"
+            >
               <div className="text-5xl font-bold text-white mb-2">10</div>
               <div className="text-sm text-gray-400">dots available</div>
             </motion.div>
@@ -70,14 +83,18 @@ export function DailyClaimCard({ lastClaim, onClaim }) {
             <div className="text-center">
               <Clock className="h-12 w-12 text-gray-500 mx-auto mb-2" />
               <div className="text-sm text-gray-400">Come back tomorrow</div>
-              <div className="text-xs text-gray-500 mt-2">Next claim available at midnight</div>
+              <div className="text-xs text-gray-500 mt-2">
+                Next claim available at midnight
+              </div>
             </div>
           )}
         </div>
-        {error && <div className="text-red-500 text-sm text-center mt-2">{error}</div>}
+        {error && (
+          <div className="text-red-500 text-sm text-center mt-2">{error}</div>
+        )}
       </CardContent>
       <CardFooter>
-        <Button
+        <Button 
           className="w-full bg-[#d1ff00] hover:bg-[#b8e600] text-black font-bold"
           disabled={!canClaim || isLoading || claimed}
           onClick={handleClaim}
@@ -98,4 +115,3 @@ export function DailyClaimCard({ lastClaim, onClaim }) {
     </Card>
   )
 }
-
