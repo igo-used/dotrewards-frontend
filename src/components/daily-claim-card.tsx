@@ -47,10 +47,16 @@ export function DailyClaimCard({ lastClaim, onClaim }: DailyClaimCardProps) {
         setClaimed(true)
         setTimeout(() => {
           setClaimed(false)
+<<<<<<< HEAD
           if (onClaim) {
             onClaim()
           }
         }, 2000)
+=======
+        if (onClaim) {
+  onClaim()
+}, 2000)
+>>>>>>> 24a9cccce7d5d286640d965d2bdffcb87bed2dee
       } else {
         setError(data.message || "Failed to claim reward")
       }
